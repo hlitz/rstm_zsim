@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/143/branches/qichang/eigenbench/scripts/mixed
+END
+longtail.pl
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/143/branches/qichang/eigenbench/scripts/mixed/longtail.pl
+END
+reader_writer.pl
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/143/branches/qichang/eigenbench/scripts/mixed/reader_writer.pl
+END
+uniform.pl
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/143/branches/qichang/eigenbench/scripts/mixed/uniform.pl
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/143/branches/qichang/eigenbench/scripts/mixed/README
+END
+bimodal.pl
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/143/branches/qichang/eigenbench/scripts/mixed/bimodal.pl
+END
+dist_main.pl
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/143/branches/qichang/eigenbench/scripts/mixed/dist_main.pl
+END
+normal.pl
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/143/branches/qichang/eigenbench/scripts/mixed/normal.pl
+END

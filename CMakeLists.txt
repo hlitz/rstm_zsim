@@ -109,6 +109,8 @@ if (CMAKE_USE_PTHREADS_INIT)
   if (rstm_enable_mesh)
     add_subdirectory(mesh) # build mesh
   endif ()
+	add_subdirectory(eigenbench/src) # build eigenbench
+	add_subdirectory(lee/src) # build lee
 else ()
   message (STATUS "Pthreads not found, will not build pthread apps.")
 endif ()

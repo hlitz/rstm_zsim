@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/307/branches/qichang/lee/inputs
+END
+mainboard.txt
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/307/branches/qichang/lee/inputs/mainboard.txt
+END
+sparseshort.txt
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/307/branches/qichang/lee/inputs/sparseshort.txt
+END
+sparselong.txt
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/307/branches/qichang/lee/inputs/sparselong.txt
+END
+memboard.txt
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/307/branches/qichang/lee/inputs/memboard.txt
+END
+testBoard.txt
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/307/branches/qichang/lee/inputs/testBoard.txt
+END
