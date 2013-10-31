@@ -64,6 +64,11 @@ class GridCell
 			stm::TxThread *tx = stm::Self;
 			return (int)TM_READ(m_val);
 		}
+
+		int get_val_promo() {
+			stm::TxThread *tx = stm::Self;
+			return (int)TM_READ_PROMO(m_val);
+		}
 };
 
 class Frontier {
@@ -106,6 +111,7 @@ class Frontier {
 		int getHeight();
 		int getDepth();
 		int getPoint(int x, int y, int z);
+		int getPointPromo(int x, int y, int z);
 		void setPoint(int x, int y, int z, int val);
 		int getPointNonRelease(int x, int y, int z);
 		int getVerifyPoint(int x, int y, int z);

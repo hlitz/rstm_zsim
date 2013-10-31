@@ -405,6 +405,21 @@ namespace stm
           return (T)v.v[offset];
       }
 
+			TM_INLINE
+      static T read_promo(T* addr, TxThread* thread)
+      {
+          // we must read the word (as a void*) that contains the 4byte at
+          // address addr, then treat that as an array of T's from which we
+          // pull out a specific element (based on the 3-lsb)
+          union { int v[2]; void* v2; } v;
+          void** a = (void**)(((intptr_t)addr) & ~7ul);
+          long offset = (((intptr_t)addr)>>2)&1;
+          v.v2 = thread->tmread_promo(thread, a
+                                STM_MASK(0xffffffff << (32 * offset)));
+          return (T)v.v[offset];
+      }
+
+
       TM_INLINE
       static void write(T* addr, T val, TxThread* thread)
       {

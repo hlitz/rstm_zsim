@@ -45,6 +45,8 @@
 
 #include "lee.h"
 
+//#define SI_SAFE_READS
+
 using namespace std;
 
 const int Lee::dx[2][4] = { { -1, 1, 0, 0 },
@@ -469,7 +471,7 @@ bool Lee::expandFromTo(int x, int y, int xGoal, int yGoal,
 					if(Lee::DEBUG) 
 					printf("X %d Y %d Z %d DW %d processing - val %d\n", f.getX(), f.getY(),
 							f.getZ(), f.getDw(), tempg[f.getX()][f.getY()][f.getZ()]);
-				weight = grid->getPoint(f.getX(),f.getY() + 1,f.getZ()) + 1;
+				weight = grid->getPointPromo(f.getX(),f.getY() + 1,f.getZ()) + 1;
 				prev_val = tempg[f.getX()][f.getY() + 1][f.getZ()];
 				bool reached = (f.getX() == xGoal) && (f.getY() + 1 == yGoal);
 				if ((prev_val > tempg[f.getX()][f.getY()][f.getZ()] + weight)
@@ -482,7 +484,7 @@ bool Lee::expandFromTo(int x, int y, int xGoal, int yGoal,
 									f.getZ(), 0));
 					}
 				}
-				weight = grid->getPoint(f.getX() + 1,f.getY(),f.getZ()) + 1;
+				weight = grid->getPointPromo(f.getX() + 1,f.getY(),f.getZ()) + 1;
 				prev_val = tempg[f.getX() + 1][f.getY()][f.getZ()];
 				reached = (f.getX() + 1 == xGoal) && (f.getY() == yGoal);
 				if ((prev_val > tempg[f.getX()][f.getY()][f.getZ()] + weight)
@@ -495,7 +497,7 @@ bool Lee::expandFromTo(int x, int y, int xGoal, int yGoal,
 									f.getZ(), 0));
 					}
 				}
-				weight = grid->getPoint(f.getX(),f.getY() - 1,f.getZ()) + 1;
+				weight = grid->getPointPromo(f.getX(),f.getY() - 1,f.getZ()) + 1;
 				prev_val = tempg[f.getX()][f.getY() - 1][f.getZ()];
 				reached = (f.getX() == xGoal) && (f.getY() - 1 == yGoal);
 				if ((prev_val > tempg[f.getX()][f.getY()][f.getZ()] + weight)
@@ -508,7 +510,7 @@ bool Lee::expandFromTo(int x, int y, int xGoal, int yGoal,
 									f.getZ(), 0));
 					}
 				}
-				weight = grid->getPoint(f.getX() - 1,f.getY(),f.getZ()) + 1;
+				weight = grid->getPointPromo(f.getX() - 1,f.getY(),f.getZ()) + 1;
 				prev_val = tempg[f.getX() - 1][f.getY()][f.getZ()];
 				reached = (f.getX() - 1 == xGoal) && (f.getY() == yGoal);
 				if ((prev_val > tempg[f.getX()][f.getY()][f.getZ()] + weight)
@@ -522,14 +524,14 @@ bool Lee::expandFromTo(int x, int y, int xGoal, int yGoal,
 					}
 				}
 				if (f.getZ() == 0) {
-					weight = grid->getPoint(f.getX(),f.getY(),1) + 1;
+					weight = grid->getPointPromo(f.getX(),f.getY(),1) + 1;
 					if ((tempg[f.getX()][f.getY()][1] > tempg[f.getX()][f.getY()][0])
 							&& (weight < Grid::OCC)) {
 						tempg[f.getX()][f.getY()][1] = tempg[f.getX()][f.getY()][0];
 						tmp_front.push_back(Frontier(f.getX(), f.getY(), 1, 0));
 					}
 				} else {
-					weight = grid->getPoint(f.getX(),f.getY(),0) + 1;
+					weight = grid->getPointPromo(f.getX(),f.getY(),0) + 1;
 					if ((tempg[f.getX()][f.getY()][0] > tempg[f.getX()][f.getY()][1])
 							&& (weight < Grid::OCC)) {
 						tempg[f.getX()][f.getY()][0] = tempg[f.getX()][f.getY()][1];
@@ -727,6 +729,14 @@ int Grid::getHeight() {
 
 int Grid::getDepth() {
 	return depth;
+}
+
+int Grid::getPointPromo(int x, int y, int z) {
+#ifdef SI_SAFE_READS
+	return grid[x][y][z].get_val_promo();
+#else
+	return grid[x][y][z].get_val();
+#endif
 }
 
 int Grid::getPoint(int x, int y, int z) {

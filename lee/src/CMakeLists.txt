@@ -18,5 +18,5 @@ set(
 # build the different executables
 foreach (arch ${rstm_archs})
   add_stamp_executable(exec lee ${arch} ${sources})
-  add_target_definitions(${exec} RSTM)
+	add_target_definitions(${exec} RSTM)
 endforeach ()
