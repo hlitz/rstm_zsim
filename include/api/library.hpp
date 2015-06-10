@@ -54,9 +54,11 @@
 #include <stm/config.h>
 #include <common/platform.hpp>
 #include <stm/txthread.hpp>
-#include "spinlock-rtm.hpp"
 
 #define ZSIM_TM
+#ifdef ZSIM_TM
+#include "spinlock-rtm.hpp"
+#endif
 namespace stm
 {
   /**
@@ -283,7 +285,7 @@ namespace stm
  */
 #ifdef ZSIM_TM
 #define TM_BEGIN(TYPE) stm::TxThread* tx = (stm::TxThread*)stm::Self;	\
-  rtm_glbl_spinlock_acquire(tx->id);
+  rtm_glbl_spinlock_acquire(tx);
 
 //asm(" movl $1040, %ecx\n\t"  "xchg %rcx, %rcx");
 #else
@@ -301,7 +303,7 @@ namespace stm
  *  enforce lexical scoping
  */
 #ifdef ZSIM_TM
-#define TM_END  rtm_glbl_spinlock_release(tx->id);
+#define TM_END  rtm_glbl_spinlock_release(tx);
 //asm(" movl $1041, %ecx\n\t"  "xchg %rcx, %rcx");
 #else
 

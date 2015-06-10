@@ -83,7 +83,11 @@ namespace stm
         begin_wait(0),
         strong_HG(),
         irrevocable(false),
-	txn(0)
+    txn(0),
+    tx_retry(0),
+    tx_trxnal(0),
+    tx_locked(0)
+
   {
       // prevent new txns from starting.
       while (true) {

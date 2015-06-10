@@ -421,9 +421,9 @@
 #      define thread_barrier_wait();    _Pragma ("omp barrier")
 
 #      define P_MALLOC(size)            malloc(size)
-#      define P_FREE(ptr)               /*free(ptr)*/
+#      define P_FREE(ptr)               free(ptr)
 #      define TM_MALLOC(size)           malloc(size)
-#      define TM_FREE(ptr)              /*free(ptr)  TODO: fix memory free problem with OpenTM */
+#      define TM_FREE(ptr)              free(ptr) /* TODO: fix memory free problem with OpenTM */
 
 #    else /* !OTM  THIS PATH WE USE FOR ZSIM_TM */
 
@@ -437,9 +437,9 @@
 #      define TM_END_WAIVER()
 
 #      define P_MALLOC(size)            malloc(size)
-#      define P_FREE(ptr)               /*free(ptr)*/
+#      define P_FREE(ptr)               free(ptr)
 #      define SEQ_MALLOC(size)          malloc(size)
-#      define SEQ_FREE(ptr)             /*free(ptr)*/
+#      define SEQ_FREE(ptr)             free(ptr)
 
 #      define TM_MALLOC(size)           TM_ALLOC(size)
 //#      define TM_FREE(ptr)              free(ptr)
@@ -514,11 +514,11 @@
 #  endif
 
 #  define P_MALLOC(size)                malloc(size)
-#  define P_FREE(ptr)                   /*free(ptr)*/
+#  define P_FREE(ptr)                   free(ptr)
 #  define TM_MALLOC(size)               malloc(size)
-#  define TM_FREE(ptr)                  /*free(ptr)*/
+#  define TM_FREE(ptr)                  free(ptr)
 #  define SEQ_MALLOC(size)              malloc(size)
-#  define SEQ_FREE(ptr)                 /*free(ptr)*/
+#  define SEQ_FREE(ptr)                 free(ptr)
 
 #  define TM_BEGIN()                    __transaction [[relaxed]] {
 #  define TM_BEGIN_RO()                 __transaction [[relaxed]] {
@@ -560,9 +560,9 @@
 #  else /* !SIMULATOR */
 
 #    define P_MALLOC(size)              malloc(size)
-#    define P_FREE(ptr)                 /*free(ptr)*/
+#    define P_FREE(ptr)                 free(ptr)
 #    define TM_MALLOC(size)             malloc(size)
-#    define TM_FREE(ptr)                /*free(ptr)*/
+#    define TM_FREE(ptr)                free(ptr)
 
 #  endif /* !SIMULATOR */
 

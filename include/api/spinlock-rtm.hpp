@@ -44,6 +44,7 @@
 #include <assert.h>
 #include <iostream>
 #include <string>
+#include <stm/txthread.hpp>
 
 #include <unistd.h>
 #include <pthread.h>
@@ -195,21 +196,34 @@ static inline UNUSED
 //static int g_locks_elided = 0;
 //static int g_locks_failed = 0;
 //static int g_rtm_retries  = 0;
+/*
+struct rtm_thread{
+  uint64_t rtm_retries;
+  uint64_t transactional;
+  uint64_t locked;
+  uint64_t pad[5];
+
+  void init(){
+    rtm_retries = 0;
+    transactional = 7;
+    locked = 8;
+  };
+  };*/
 
 //cacheline aligned so transactions do abort on meta conflicts/false sharing 
 static uint64_t glbl_rtm_lock __attribute__((aligned(0x40))); 
-static uint64_t rtm_retries[128*8] __attribute__((aligned(0x40)));
+//static rtm_thread thread_info[128];
 
 void ALWAYS_INLINE_RTM rtm_restart(){
   _xabort(0x77);
 }
 
-void ALWAYS_INLINE_RTM hle_spinlock_acquire(uint64_t* lock, uint32_t tid) EXCLUSIVE_LOCK_FUNCTION(lock){
+void ALWAYS_INLINE_RTM hle_spinlock_acquire(uint64_t* lock, stm::TxThread*  tid) EXCLUSIVE_LOCK_FUNCTION(lock){
  while (__sync_lock_test_and_set(lock, 1) != 0)
     {
       uint64_t val;
       do {
-	_mm_pause();
+	//	_mm_pause();
 	val = __sync_val_compare_and_swap(lock, 1, 1);
       } while (val == 1);
     }
@@ -217,15 +231,15 @@ void ALWAYS_INLINE_RTM hle_spinlock_acquire(uint64_t* lock, uint32_t tid) EXCLUS
 
 
 void ALWAYS_INLINE_RTM
-hle_spinlock_release(uint64_t* lock, uint32_t tid) UNLOCK_FUNCTION(lock)
+hle_spinlock_release(uint64_t* lock, stm::TxThread*  tid) UNLOCK_FUNCTION(lock)
 {
   __sync_lock_release(lock);
 }
 
-static bool TM_RETRY;
+
 
 void ALWAYS_INLINE_RTM
-rtm_spinlock_acquire(uint64_t* lock, uint32_t tid) EXCLUSIVE_LOCK_FUNCTION(lock)
+rtm_spinlock_acquire(uint64_t* lock, stm::TxThread*  tid) EXCLUSIVE_LOCK_FUNCTION(lock)
 {
 unsigned int tm_status = 0;
 //rtm_retries[tid*8+1]=0;
@@ -234,6 +248,7 @@ unsigned int tm_status = 0;
     /* If the lock is free, speculatively elide acquisition and continue. */
     if (*lock==0){//hle_spinlock_isfree(lock)) return;
       //rtm_retries[tid*8+1]=1;
+      tid->tx_trxnal++;
       return;
     }
     /* Otherwise fall back to the spinlock by aborting. */
@@ -241,10 +256,10 @@ unsigned int tm_status = 0;
   } 
   else {
     /* _xbegin could have had a conflict, been aborted, etc */
-    if((tm_status & _XABORT_RETRY) && rtm_retries[tid*8]<4){
+    if((tm_status & _XABORT_RETRY) && tid->tx_retry<10){
       //__sync_add_and_fetch(&g_rtm_retries, 1);
-      //if(!TM_RETRY) rtm_retries[tid*8]++;
-      _mm_pause();
+      //tid->tx_retry++;
+      //_mm_pause();
       goto tm_try; // Retry 
     }
     if (tm_status & _XABORT_EXPLICIT) {
@@ -252,19 +267,22 @@ unsigned int tm_status = 0;
       if (code == 0xff) goto tm_fail; /* Lock was taken; fallback */
     }
   tm_fail:
-    rtm_retries[tid*8] = 0x0UL;
+    tid->tx_retry = 0x0UL;
+    tid->tx_locked++;
+    //    printf("t inf p %p\n", &(thread_info[tid].rtm_retries));
+    //printf("addr trxnal: %p %i %p\n", &thread_info[tid], tid, &thread_info[0]);
     //    __sync_add_and_fetch(&g_locks_failed, 1);
     hle_spinlock_acquire(lock, tid);
   }
 }
 
 void ALWAYS_INLINE_RTM
-rtm_glbl_spinlock_acquire(uint32_t tid){
+rtm_glbl_spinlock_acquire(stm::TxThread* tid){
   rtm_spinlock_acquire(&glbl_rtm_lock, tid);
 }
 
 void ALWAYS_INLINE_RTM
-rtm_spinlock_release(uint64_t* lock, uint32_t tid) UNLOCK_FUNCTION(lock)
+rtm_spinlock_release(uint64_t* lock, stm::TxThread* tid) UNLOCK_FUNCTION(lock)
 {
   /* If the lock is still free, we'll assume it was elided. This implies
      we're in a transaction. */
@@ -278,13 +296,32 @@ rtm_spinlock_release(uint64_t* lock, uint32_t tid) UNLOCK_FUNCTION(lock)
 }
 
 void ALWAYS_INLINE_RTM
-rtm_glbl_spinlock_release(uint32_t tid){
+rtm_glbl_spinlock_release(stm::TxThread*  tid){
   //rtm_retries[tid*8+2]--;
   rtm_spinlock_release(&glbl_rtm_lock, tid);
 }
 
+ void ALWAYS_INLINE_RTM rtm_exit()
+ {
+   uint64_t locks = 0;				
+   uint64_t trxnal = 0;
+
+   for(int i=130; i<259; i++){
+     //    printf("locked %lu\n", thread_info[i].locked);
+     //printf("trxnal %lu\n", thread_info[i].transactional);
+     //printf("addr exit: %p\n", &thread_info[i]);
+     //trxnaltid->tx_trxnal;
+     //tid->tx_locked;
+     //locks += thread_info[i].locked;
+     //trxnal += thread_info[i].transactional;
+   }
+   //   printf("Transactions locked: %lu\n", tid-);
+   //printf("Transactions trxnal: %lu\n", trxnal);
+ }
+
  void ALWAYS_INLINE_RTM rtm_init()
  {
+   /*
    if(getenv("TM_RETRY") != NULL){
      std::string str(getenv("TM_RETRY"));
      if(str.compare("FALSE")==0)
@@ -294,13 +331,14 @@ rtm_glbl_spinlock_release(uint32_t tid){
    }
    else
      TM_RETRY = true;
-   std::cout << "TM_RETRY env var: " << TM_RETRY << std::endl;
+   std::cout << "TM_RETRY env var: " << TM_RETRY << std::endl;*/
    //      std::cout << "glbl_lock addr " << std::hex << (uint64_t)&(glbl_rtm_lock) << std::endl;
     glbl_rtm_lock = 0;
     __sync_lock_release(&glbl_rtm_lock);
-
-    for(int i =0; i<128;i++){
-      rtm_retries[i] = 0x0UL;
+    //    thread_info=(rtm_thread*)malloc(sizeof(rtm_thread)*128);
+    for(int i =130; i<258;i++){
+      //thread_info[i].init();
+      //printf("addr init: %p %p\n", &thread_info[i], &thread_info[0]);
     }
  }
 /* -------------------------------------------------------------------------- */

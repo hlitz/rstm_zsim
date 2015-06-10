@@ -105,6 +105,10 @@ namespace stm
       uint64_t      end_txn_time;      // end of non-transactional work
       uint64_t      total_nontxn_time; // time on non-transactional work
 
+    uint64_t tx_retry;
+    uint64_t tx_trxnal;
+    uint64_t tx_locked;
+
     /*** PER_THREAD FIELDS to perform write skew detection */
     /*std::map <uint64_t, uint64_t > stack_trace;
     std::map <uint64_t, uint64_t > filtered_trace;

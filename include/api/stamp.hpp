@@ -34,7 +34,8 @@
     rtm_init();					\
     tm_main_startup();				\
   }							
-#define STM_SHUTDOWN()           stm::sys_shutdown()
+#define STM_SHUTDOWN()           rtm_exit(); stm::sys_shutdown() 
+  
 #define STM_NEW_THREAD()         0
 #define STM_INIT_THREAD(t, id)   tm_start(&t, thread_getId())
 #define STM_FREE_THREAD(t)
@@ -93,7 +94,7 @@ printf("sleeping for %i ns\n", (int)ts.tv_nsec);			\
 /*void tm_xbegin(){
   rtm_spinlock_release(&glbl_lock_stamp);
   }*/
-#define STM_BEGIN_WR() rtm_glbl_spinlock_acquire(thread_getId());					       
+#define STM_BEGIN_WR() rtm_glbl_spinlock_acquire((static_cast<stm::TxThread*>(STM_SELF))); /*thread_getId());*/					       
   /*
 #define STM_BEGIN_WR()						\
   {									\
@@ -136,7 +137,7 @@ __sync_synchronize();							\
 /*void tm_xend(){
   rtm_spinlock_release(&glbl_lock_stamp);
   }*/
-#define STM_END()   rtm_glbl_spinlock_release(thread_getId());
+#define STM_END()   rtm_glbl_spinlock_release((static_cast<stm::TxThread*>(STM_SELF))); /*thread_getId());*/
   /*
 #define STM_END()							\
   {									\
